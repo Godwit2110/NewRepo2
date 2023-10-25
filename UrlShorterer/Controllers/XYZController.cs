@@ -1,33 +1,51 @@
 using Microsoft.AspNetCore.Mvc;
+using UrlShorterer.Data;
+using UrlShorterer.Entities;
+using UrlShorterer.Helpers;
+using UrlShorterer.Models;
 
 namespace UrlShorterer.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class XYZController : ControllerBase
+    [Route(template: "api/[controller]")]
+    public class UrlController : Controller
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        private readonly UrlShortenerContext _UrlContext;
 
-        private readonly ILogger<XYZController> _logger;
-
-        public XYZController(ILogger<XYZController> logger)
+        public UrlController(UrlShortenerContext UrlContext)
         {
-            _logger = logger;
+            _UrlContext = UrlContext;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpGet("get")]
+
+        public IActionResult GetUrl(string ClientUrl)
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var urlEntity = _UrlContext.UserUrl.FirstOrDefault(x => x.ShortUrl == ClientUrl);
+
+            if (urlEntity == null)
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                return NotFound("La URL no existe");
+            }
+            urlEntity.ContadorViews += 1;
+            _UrlContext.SaveChanges();
+            return Ok(urlEntity.Url);
+            //return Redirect(urlEntity.Url);
         }
+
+        [HttpPost("post")]
+        public IActionResult CreateNewURL(string newurl)
+        {
+            var urlHelper = new UrlHelper();
+            var urlEntity = new XYZForCreationDto()
+            {
+                Url = newurl,
+                ShortUrl = urlHelper.GetShortURL()
+            };
+            _UrlContext.UserUrl.Add(urlEntity);
+            _UrlContext.SaveChanges();
+            return Ok(urlEntity.ShortUrl);
+        }
+
     }
 }
