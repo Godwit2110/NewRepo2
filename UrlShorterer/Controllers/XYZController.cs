@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using UrlShorterer.Data;
-using UrlShorterer.Entities;
 using UrlShorterer.Helpers;
 using UrlShorterer.Models;
 

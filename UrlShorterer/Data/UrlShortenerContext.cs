@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UrlShorterer.Data.Services;
-using UrlShorterer.Entities;
 using UrlShorterer.Models;
 
 namespace UrlShorterer.Data
@@ -10,7 +8,6 @@ namespace UrlShorterer.Data
         public UrlShortenerContext(DbContextOptions<UrlShortenerContext> options) : base(options)
         {
         }
-
         public DbSet<XYZForCreationDto> UserUrl { get; set; }
     }
 
