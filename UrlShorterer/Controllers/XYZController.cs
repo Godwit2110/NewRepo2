@@ -29,7 +29,6 @@ namespace UrlShorterer.Controllers
             urlEntity.ContadorViews += 1;
             _UrlContext.SaveChanges();
             return Ok(urlEntity.Url);
-            //return Redirect(urlEntity.Url);
         }
 
         [HttpPost("post")]
