@@ -12,7 +12,6 @@ namespace UrlShorterer.Helpers
         private readonly Random _random = new();
         public string GetShortURL()
         {
-            string shortUrl = "http://shortUrl.ly/";
             var codeChars = new char[NumberOfCharsInShortLink];
 
             for (var i = 0; i < NumberOfCharsInShortLink; i++)
@@ -20,7 +19,8 @@ namespace UrlShorterer.Helpers
                 var randomIndex = _random.Next(Alphabet.Length - 1);
                 codeChars[i] = Alphabet[randomIndex];
             }
-            return shortUrl;
+            var code = new string(codeChars);
+            return code;
         }
         
     }

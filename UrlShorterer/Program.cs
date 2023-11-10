@@ -1,36 +1,34 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using UrlShorterer.Data;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using UrlShortener.Data;
+using UrlShorterer.Services.Interfaces;
+using Url_Shortener.Services.Implementations;
 
-namespace Url_Shortener
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    public class Program
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(setupAction =>
+{
+    setupAction.AddSecurityDefinition("UrlShortererApiBearerAuth", new OpenApiSecurityScheme() //Esto va a permitir usar swagger con el token.
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        Description = "Acá pegar el token generado al loguearse."
+    });
 
-            // Add services to the container.
-            builder.Services.AddDbContext<UrlShortenerContext>(Options =>
-            {
-                Options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(setupAction =>
-            {
-                setupAction.AddSecurityDefinition("UrlShortererBearerAuth", new OpenApiSecurityScheme() //Esto va a permitir usar swagger con el token.
-                {
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    Description = "Acá pegar el token generado al loguearse."
-                });
-                setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -38,12 +36,17 @@ namespace Url_Shortener
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "UrlShortererBearerAuth" } //Tiene que coincidir con el id seteado arriba en la definición
+                    Id = "UrlShortererApiBearerAuth" } //Tiene que coincidir con el id seteado arriba en la definición
                 }, new List<string>() }
     });
+});
 
-            });
-            builder.Services.AddAuthentication("Bearer") //"Bearer" es el tipo de auntenticación que tenemos que elegir después en PostMan para pasarle el token
+builder.Services.AddDbContext<UrlShortenerContext>(Options =>
+{
+    Options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddAuthentication("Bearer") //"Bearer" es el tipo de auntenticación que tenemos que elegir después en PostMan para pasarle el token
     .AddJwtBearer(options => //Acá definimos la configuración de la autenticación. le decimos qué cosas queremos comprobar. La fecha de expiración se valida por defecto.
     {
         options.TokenValidationParameters = new()
@@ -57,23 +60,27 @@ namespace Url_Shortener
         };
     }
 );
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
 
 
-            app.MapControllers();
+#region DependencyInjections
+builder.Services.AddScoped<IUserService, UserService>();
+#endregion
 
-            app.Run();
-        }
-    }
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

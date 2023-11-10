@@ -5,7 +5,7 @@ namespace UrlShorterer.Models
     public class AuthenticationRequestBody
     {
         [Required]
-        public string? NombreDeUsuario { get; set; }
+        public string? Email { get; set; }
         [Required]
         public string? Contrasenia { get; set; }
     }
