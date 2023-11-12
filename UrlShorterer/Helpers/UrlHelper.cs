@@ -14,15 +14,18 @@ namespace UrlShorterer.Helpers
         {
             var codeChars = new char[NumberOfCharsInShortLink];
 
-            for (var i = 0; i < NumberOfCharsInShortLink; i++)
+            for(var i = 0; i < NumberOfCharsInShortLink; i++)
+
             {
                 var randomIndex = _random.Next(Alphabet.Length - 1);
                 codeChars[i] = Alphabet[randomIndex];
             }
+            string httplink = "http://httplink.ly/";
             var code = new string(codeChars);
-            return code;
+
+            string newUrl = httplink + code;
+            return newUrl;
         }
-        
     }
 }
 

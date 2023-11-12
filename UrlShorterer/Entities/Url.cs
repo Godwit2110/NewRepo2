@@ -14,7 +14,7 @@ namespace UrlShorterer.Entities
         [Required]
         public string? ShortUrls { get; set; }
         [Required]
-        public string? ContadorViews { get; set; }
+        public int? ContadorViews { get; set; } = 0;
         [Required]
         public CategoriaEnum Categorias { get; set; }
     }
